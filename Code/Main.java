@@ -5,7 +5,7 @@ public class Main {
         System.out.println("Hello and welcome!");
 
         Indexing index = new Indexing();
-        index.readFile();
+        index.getUnprocessedPasswords();
 
     }
 }

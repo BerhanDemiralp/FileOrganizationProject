@@ -1,6 +1,8 @@
 package Code;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Indexing {
 
@@ -38,37 +40,59 @@ public class Indexing {
     }
 
     public void getFileWithPassword(String password){
+        Map<Character, String> invalidCharMap = new HashMap<>();
+        invalidCharMap.put('\\', "backslash");
+        invalidCharMap.put('/', "slash");
+        invalidCharMap.put(':', "colon");
+        invalidCharMap.put('*', "asterisk");
+        invalidCharMap.put('?', "question mark");
+        invalidCharMap.put('"', "quotation mark");
+        invalidCharMap.put('<', "less than");
+        invalidCharMap.put('>', "greater than");
+        invalidCharMap.put('|', "pipe");
 
         String sourceFolderPath = "src/Index";
 
         File sourceFolder = new File(sourceFolderPath);
-
-        String key = String.valueOf(password.charAt(0));
+        String key;
+        char _key = password.charAt(0);
+        if(invalidCharMap.containsKey(_key)){
+            key = invalidCharMap.get(_key);
+        }
+        else {
+            key = String.valueOf(_key);
+        }
 
         if(sourceFolder.isDirectory()){
             File[] folders = sourceFolder.listFiles();
             for (File folder : folders) {
+                String foldername = folder.getName() ;
+                System.out.println(foldername);
+                Boolean folderbool = folder.getName().trim().equals(key);
                 if (folder.getName().trim().equals(key) && folder.isFile()) {
-                    String newFilePath = folder.getPath() + File.separator + key + ".txt";
-                    File txtFile = new File(newFilePath);
-                    writePasswordToFile(txtFile,password);
+                    writePasswordToFile(folder,password);
                 }
             }
+            String newFolderPath = sourceFolder + File.separator + key;
+            File _folder =  new File(newFolderPath);
+            writePasswordToFile(_folder,password);
         }
         else {
             String newFolderPath = sourceFolder + File.separator + key;
             File folder =  new File(newFolderPath);
-            String newFilePath = folder.getPath() + File.separator + key + ".txt";
-            File txtFile = new File(newFilePath);
-            writePasswordToFile(txtFile,password);
+          //  String newFilePath = folder.getPath() + File.separator + key + ".txt";
+          //  File txtFile = new File(newFilePath);
+            writePasswordToFile(folder,password);
         }
     }
     public void writePasswordToFile(File file, String password){
         String filePath = file.getPath();
+        new File(filePath).mkdirs();
         String content = password; // Password|MD5Hash|Sha128|Sha256|source_file_name
+        String fileName = file.getName(); // Dosya adını belirtin
 
-        try (FileWriter writer = new FileWriter(filePath,true)) {
-            writer.write(content);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath+File.separator+fileName,true))) {
+            writer.write(content+"\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
