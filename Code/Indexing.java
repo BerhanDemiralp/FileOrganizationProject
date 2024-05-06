@@ -1,5 +1,8 @@
 package Code;
 
+import javax.print.DocFlavor;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +53,7 @@ public class Indexing {
         invalidCharMap.put('<', "less than");
         invalidCharMap.put('>', "greater than");
         invalidCharMap.put('|', "pipe");
+        invalidCharMap.put('.', "dot");
 
         String sourceFolderPath = "src/Index";
 
@@ -85,16 +89,105 @@ public class Indexing {
             writePasswordToFile(folder,password);
         }
     }
-    public void writePasswordToFile(File file, String password){
+    public void writePasswordToFile(File file, String password) {
         String filePath = file.getPath();
         new File(filePath).mkdirs();
-        String content = password; // Password|MD5Hash|Sha128|Sha256|source_file_name
-        String fileName = file.getName(); // Dosya adını belirtin
+        String content; // Password|MD5Hash|Sha128|Sha256|source_file_name
+        content = generateContent(password);
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath+File.separator+fileName,true))) {
-            writer.write(content+"\n");
+        String fileName = file.getName(); // Dosya adını belirtin
+        boolean passwordExists = false;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath + File.separator + fileName));
+        ) {
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                // Şifre dosyadas zaten varsa işlemi sonlandır
+                if (line.equals(password)) {
+                    passwordExists = true;
+                    break;
+                }
+            }
+            reader.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if (!passwordExists) {
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath + File.separator + fileName, true))) {
+                writer.write(content + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public String generateContent(String password){
+        String content = password;
+        content = content + "|" +generateMD5Hash(password);
+        content = content + "|" +generateSHA1Hash(password);
+        content = content + "|" +generateSHA256Hash(password);
+        content = content + "|" +password.charAt(0);
+        System.out.println(content);
+        return content;
+    }
+    public String generateMD5Hash(String text) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            md.update(text.getBytes());
+
+            byte[] hashBytes = md.digest();
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            System.out.println(sb.toString());
+            return sb.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public String generateSHA1Hash(String text) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+
+            md.update(text.getBytes());
+
+            byte[] hashBytes = md.digest();
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public String generateSHA256Hash(String text) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+            md.update(text.getBytes());
+
+            byte[] hashBytes = md.digest();
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
