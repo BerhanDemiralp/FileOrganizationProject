@@ -71,7 +71,7 @@ public class Indexing {
             File[] folders = sourceFolder.listFiles();
             for (File folder : folders) {
                 String foldername = folder.getName() ;
-                System.out.println(foldername);
+
                 Boolean folderbool = folder.getName().trim().equals(key);
                 if (folder.getName().trim().equals(key) && folder.isFile()) {
                     writePasswordToFile(folder,password);
@@ -98,13 +98,11 @@ public class Indexing {
         String fileName = file.getName(); // Dosya adını belirtin
         boolean passwordExists = false;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath + File.separator + fileName));
-        ) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath + File.separator + fileName))) {
             String line;
-
             while ((line = reader.readLine()) != null) {
                 // Şifre dosyadas zaten varsa işlemi sonlandır
-                if (line.equals(password)) {
+                if (line.equals(generateContent(password))) {
                     passwordExists = true;
                     break;
                 }
@@ -129,7 +127,6 @@ public class Indexing {
         content = content + "|" +generateSHA1Hash(password);
         content = content + "|" +generateSHA256Hash(password);
         content = content + "|" +password.charAt(0);
-        System.out.println(content);
         return content;
     }
     public String generateMD5Hash(String text) {
@@ -144,7 +141,6 @@ public class Indexing {
             for (byte b : hashBytes) {
                 sb.append(String.format("%02x", b));
             }
-            System.out.println(sb.toString());
             return sb.toString();
 
         } catch (NoSuchAlgorithmException e) {
