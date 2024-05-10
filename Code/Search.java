@@ -48,7 +48,6 @@ public class Search {
 
                         while ((line = reader.readLine()) != null) {
                             if (line.equals(index.generateContent(password))) {
-                                System.out.println("exist");
                                 passwordExists = true;
                                 show(password);
                                 break;
@@ -60,7 +59,7 @@ public class Search {
 
                     if (!passwordExists) {
                         System.out.println("don't exist");
-
+                        System.out.println(password +" added in passwordss");
                         String content = index.generateContent(password);
                         try (BufferedWriter writer = new BufferedWriter(new FileWriter(folderPath + File.separator + folderName, true))) {
                             writer.write(content + "\n");
@@ -82,9 +81,9 @@ public class Search {
     }
 
     public void show(String password){
-        System.out.println("showda");
+        System.out.println("exist");
         String content = index.generateContent(password);
-        System.out.println("Aranan Şifre : "+content);
+        System.out.println("Searched password : "+content);
     }
 
 
