@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Indexing {
-
+    String suffix = "";
+    Map<Character, Integer> counts = new HashMap<>();
     public void process(){
 
     }
@@ -74,47 +75,53 @@ public class Indexing {
 
                 Boolean folderbool = folder.getName().trim().equals(key);
                 if (folder.getName().trim().equals(key) && folder.isFile()) {
-                    writePasswordToFile(folder,password);
+                    writePasswordToFile(folder,password,key);
                 }
             }
             String newFolderPath = sourceFolder + File.separator + key;
             File _folder =  new File(newFolderPath);
-            writePasswordToFile(_folder,password);
+            writePasswordToFile(_folder,password,key);
         }
         else {
             String newFolderPath = sourceFolder + File.separator + key;
             File folder =  new File(newFolderPath);
           //  String newFilePath = folder.getPath() + File.separator + key + ".txt";
           //  File txtFile = new File(newFilePath);
-            writePasswordToFile(folder,password);
+            writePasswordToFile(folder,password,key);
         }
     }
-    public void writePasswordToFile(File file, String password) {
-        String filePath = file.getPath();
-        new File(filePath).mkdirs();
+    public void writePasswordToFile(File file, String password,String key) {
+    	String folderpath = file.getPath();
+        String filepath = folderpath + File.separator + key + suffix + ".txt";
+        new File(folderpath).mkdirs();
         String content; // Password|MD5Hash|Sha128|Sha256|source_file_name
         content = generateContent(password);
-
-        String fileName = file.getName(); // Dosya adını belirtin
+        File txtFile = new File(filepath);
         boolean passwordExists = false;
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath + File.separator + fileName))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Şifre dosyadas zaten varsa işlemi sonlandır
-                if (line.equals(generateContent(password))) {
-                    passwordExists = true;
-                    break;
+        if(txtFile.exists()) {
+        	try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Şifre dosyadas zaten varsa işlemi sonlandır
+                    if (line.equals(generateContent(password))) {
+                        passwordExists = true;
+                        break;
+                    }
                 }
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         if (!passwordExists) {
-
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath + File.separator + fileName, true))) {
+        	
+        	int count = counts.getOrDefault(password.charAt(0), 0);
+            counts.put(password.charAt(0), counts.getOrDefault(password.charAt(0), 0) + 1);
+        	System.out.println(count);
+        	suffix = String.valueOf(count/1000);
+        	System.out.println(suffix);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(filepath, true))) {
                 writer.write(content + "\n");
             } catch (IOException e) {
                 e.printStackTrace();
